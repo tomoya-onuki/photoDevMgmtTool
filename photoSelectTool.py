@@ -3,13 +3,27 @@ import sys
 import os
 import glob
 import shutil
+from tkinter import filedialog
+import tkinter as tk
+
+
+def init_tk():
+    root = tk.Tk()
+    root.withdraw()
+
+
+def show_file_dialog():
+    root_dir = os.path.abspath(os.path.dirname(__file__))
+    dirname = filedialog.askdirectory(initialdir=root_dir)
+    return f'{dirname}/'
+
 
 def get_dirname():
     args = sys.argv
     # print(args)
     if len(args) == 1:
-       print('arg error: python3 photoSelectTool.py [dirname]')
-       exit()
+        print('arg error: python3 photoSelectTool.py [dirname]')
+        exit()
     else:
         dirname = args[1]
         dirname = dirname if dirname.endswith('/') else f'{dirname}/'
@@ -18,7 +32,7 @@ def get_dirname():
 
 def read_img_filenames(dirname):
     if os.path.isdir(dirname):
-        files = sorted(glob.glob(f'{dirname}*'))
+        files = sorted(glob.glob(f'{dirname}*.JPG'))
         return files
     else:
         print(f'Error: {dirname} is NOT directory.')
@@ -35,12 +49,15 @@ def show_img(filename):
 
 
 def select_img(root_dirname, filename):
-    SELECTED_IMG_DIR = f'{root_dirname}/selected'
-    SELECTED_IMG_DIR1 = f'{root_dirname}/selected1'
-    if os.path.exists(SELECTED_IMG_DIR) == False:
-        os.mkdir(SELECTED_IMG_DIR)
-    
-    shutil.copy(filename, SELECTED_IMG_DIR)
+    SELECTED_IMG_DIR_JPG = f'{root_dirname}selected/'
+    SELECTED_IMG_DIR_RAW = f'{root_dirname}selected/RAW/'
+    if not os.path.exists(SELECTED_IMG_DIR_JPG):
+        os.mkdir(SELECTED_IMG_DIR_JPG)
+    if not os.path.exists(SELECTED_IMG_DIR_RAW):
+        os.mkdir(SELECTED_IMG_DIR_RAW)
+
+    shutil.copy(filename, SELECTED_IMG_DIR_JPG)
+    shutil.copy(filename.replace('JPG', 'RW2'), SELECTED_IMG_DIR_RAW)
 
     # if os.path.exists(SELECTED_IMG_DIR1) == False:
     #     os.mkdir(SELECTED_IMG_DIR1)
@@ -54,10 +71,9 @@ def select_img(root_dirname, filename):
     #     shutil.copy(filename, SELECTED_IMG_DIR1)
 
 
-
 def increment_file_idx(file_idx, max):
     if file_idx < max:
-        file_idx+=1
+        file_idx += 1
         return file_idx
     else:
         print('File is finished.')
@@ -66,6 +82,8 @@ def increment_file_idx(file_idx, max):
 
 
 def main():
+    init_tk()
+    dirname = show_file_dialog()
     start_msg = 'Usage:\n'\
                 '   (ESC) >> 終了\n'\
                 '   (Y)   >> 画像を採用する\n'\
@@ -73,9 +91,8 @@ def main():
                 '   (B)   >> 1つまえの画像に戻る\n'\
                 '   (R)   >> 現在の選択画像ディレクトリをクリアする'
     print(start_msg)
-    dirname = get_dirname()
     filenames = read_img_filenames(dirname)
-    
+
     file_idx = 0
     MAIN_LOOP = True
     while MAIN_LOOP:
@@ -96,7 +113,7 @@ def main():
         elif key == 98:
             print('(B) Back')
             if file_idx > 0:
-                file_idx-=1
+                file_idx -= 1
         elif key == 114:
             print('(R) Clear Selected Img Directory.')
             shutil.rmtree(f'{dirname}/selected0')
@@ -110,4 +127,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
